@@ -16,7 +16,7 @@ import math
 
 class Aircraft:
 
-    def __init__(self, time_of_interest:list[int,int], aircraft_data, conditions_data, data_dir = "data_ref_2025/FTISxprt-20250304_084412.mat"):
+    def __init__(self, time_of_interest:list[int,int], aircraft_data, conditions_data, data_dir, benji_pos=288):
         self.data_dir = data_dir
         idx_of_interest = np.array(time_of_interest) * 10# First measurement, second measurement in seconds
         self.int_fuel_lbs = aircraft_data["int_fuel_lbs"]
@@ -24,10 +24,12 @@ class Aircraft:
         
         self.read_flight_data(time_of_interest, self.int_fuel_lbs, self.data_dir)
         total_mass_arr = []
-        x_cg_arr = []
+        x_com_arr = [] # metric
+        x_cg_arr = [] # %MAC
         for i in np.arange(time_of_interest[0], time_of_interest[1]+1, 1):
-            self.mass_centroid(time_of_interest[1], 288, self.data_dir)
+            self.mass_centroid(time_of_interest[1], benji_pos)
             total_mass_arr.append(self.total_current_mass_kg)
+            x_com_arr.append(self.center_mass)
             x_cg_arr.append(self.x_cg)
 
         #identifier
@@ -36,6 +38,7 @@ class Aircraft:
         #point mass parameters
         self.mass = np.mean(total_mass_arr) #aircraft_data["mass"]
         self.W = self.mass * 9.80665 # [N]       (aircraft weight)
+        self.xcom = np.mean(x_com_arr) # [m]       (x position of the center of mass)
         self.xcg =  np.mean(x_cg_arr)
 
         #stationary flight conditions
@@ -245,7 +248,7 @@ class Aircraft:
         self.rh_engine_FMF_si_1 = rh_engine_FMF_si[time_index_1:time_index_2]
         self.time_series_1 = time_series[time_index_1:time_index_2]
 
-    def mass_centroid(self, time:int, benji_pos=288, data_dir="data_ref_2025/FTISxprt-20250304_084412.mat"):
+    def mass_centroid(self, time:int, benji_pos=288):
         ## gives mass_centroid at time of interest
         ## time is the interval for time iof interest, minimum is 9, maximum is 5183
         ## benji_pos is in inches
@@ -271,17 +274,17 @@ class Aircraft:
         baggage_moment = 0 #baggage*moment_arm*lbs_kg*inch_kg
 
         # Fuel
-        self.read_flight_data([time,time+1], self.int_fuel_lbs, data_dir)
+        self.read_flight_data([time,time+1], self.int_fuel_lbs, self.data_dir)
         self.current_fuel_lbs = self.total_FL_lb_1[-1]
         fuel_moment = (2.853 * self.current_fuel_lbs + 9.896)*lbs_kg*inch_m*100  ## moment to fuel mass equation from data
 
         # Basic Empty Weight
-        BEM = 9197.0*lbs_kg
+        self.BEM_kg = 9197.0*lbs_kg
         BEM_moment = 2678893.5*inch_m*lbs_kg
 
         # mass centroid
         total_moment = np.sum(person_moments) + baggage_moment + fuel_moment + BEM_moment
-        self.total_current_mass_kg = np.sum(person_masses) + baggage + self.current_fuel_lbs*lbs_kg + BEM
+        self.total_current_mass_kg = np.sum(person_masses) + baggage + self.current_fuel_lbs*lbs_kg + self.BEM_kg
         self.center_mass = total_moment/self.total_current_mass_kg
 
         # finding coordinate of MAC

@@ -11,17 +11,17 @@ import numpy as np
 from helper import *
 import matplotlib.pyplot as plt
 import func_calculate_cla_cd
+import Aircraft
+import citation_data
 
 PLOT=True
 
-#region temp data reading:
-
-# Parameters
-int_fuel_lbs = 4100
-data_dir = "data_ref_2025/FTISxprt-20250304_084412.mat"
-
 # Load the .mat file
-data = sp.io.loadmat(data_dir)
+data = sp.io.loadmat(citation_data.Data()[0]['data_dir'])
+
+# Getting real time weight data)
+time_of_interest = [1000, 1001] # Time doesn't matter in this file because we are only getting c, S, and CmTc which are constant in citation.py
+ac = Aircraft.Aircraft(time_of_interest, citation_data.Data()[0], citation_data.Data()[1], citation_data.Data()[0]['data_dir'])
 
 # Accessing a struct field
 flightdata = data['flightdata']  # This gives a numpy structured array
@@ -60,7 +60,7 @@ lh_engine_FMF = np.asarray(flightdata['lh_engine_FMF'][0][0][0][0][0].flatten())
 rh_engine_FMF = np.asarray(flightdata['rh_engine_FMF'][0][0][0][0][0].flatten())
 
 # Total fuel left
-total_FL = int_fuel_lbs - (lh_engine_FU + rh_engine_FU)
+total_FL = ac.int_fuel_lbs - (lh_engine_FU + rh_engine_FU)
 total_FL_kg = lb_to_kg(total_FL)
 
 # Time series
@@ -68,21 +68,17 @@ time_series = np.asarray(flightdata['time'][0][0][0][0][0].flatten())
 
 
 equilibrium_cl_intervals = np.array([[11253, 12343],
-                                     [12630, 13378],
-                                     [13766, 14549],
-                                     [15499, 16633],
-                                     [17126, 18072],
-                                     [18438, 19143]])
-#endregion
-
-#region calcs
+[12630, 13378],
+[13766, 14549],
+[15499, 16633],
+[17126, 18072],
+[18438, 19143]])
 
 #arrays with the relevant data: 0 - aoa, 1 - weight, 2 - rho, 3 - tas, 4 - h(time), 5 - T(time), 6 - mach, 7 - m_f_dot_left(time), 8 - m_f_dot_right(time) 
 rhos = pressure_alt_to_density(Dadc1_bcAlt_meters, celsius_to_kelvin(Dadc1_sat))
-print("Mean density = : " + str(np.mean(rhos)))
 
 input_for_curves = [vane_AOA,
-                    (total_FL_kg + 4080)*9.81,
+                    (total_FL_kg + ac.BEM_kg + np.sum(ac.person_masses))*9.81,
                     rhos,
                     kt_to_meter_per_sec(Dadc1_tas),
                     Dadc1_bcAlt_meters,
@@ -101,22 +97,30 @@ cl2cd_curve = calc.cl2_cd(cl_curve, cd_curve)
 cl_regressant = sp.stats.linregress(np.asarray(cl_curve).T[0], np.asarray(cl_curve).T[1])
 cl2cd_regressant = sp.stats.linregress(np.asarray(cl2cd_curve).T[1], np.asarray(cl2cd_curve).T[0])
 
-print("Cla = : " + str(cl_regressant.slope))
+Cla_deg = cl_regressant.slope
+Cla_rad = cl_regressant.slope * 180 / np.pi
+
+aoa_deg = np.linspace(0, 15, 2)
+cl_plot = cl_regressant.intercept + Cla_deg * aoa_deg
+
+print("Cla (1/rad) = : " + str(Cla_rad))
 print("Cd0 = " + str(cl2cd_regressant.intercept))
 print("ClCd_slope = " + str(cl2cd_regressant.slope))
-print("e = " + str(1 / (cl2cd_regressant.slope * 15.911/2.0569 * np.pi)))  # TODO slightly less sus value for e
+print("e = " + str(1 / (cl2cd_regressant.slope * ac.b/ac.c * np.pi)))  # TODO slightly less sus value for e
 
 # endregion
 
 #region plotting
 if PLOT:
     plt.plot([x[0] for x in cd_curve if True], [x[1] for x in cd_curve if True], 'ro')
+    plt.plot()
     plt.xlabel("AoA [deg]")
     plt.ylabel("CD")
     plt.title("AoA vs CD")
     plt.show()
     plt.clf()
     plt.plot([x[0] for x in cl_curve if True], [x[1] for x in cl_curve if True], 'ro')
+    plt.plot(aoa_deg, cl_plot, 'b', label='Regression line')
     plt.xlabel("AoA [deg]")
     plt.ylabel("CL")
     plt.title("AoA vs CL")

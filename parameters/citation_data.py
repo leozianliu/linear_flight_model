@@ -13,25 +13,34 @@ def Data():
     name = "TU Delft Flying Research Lab PH-LAB"
     aircraft_data_int["name"] = name
 
+    # ==========Change me!!!==========
+    data_dir = "data_our_2025/FTISxprt-20250304_084412.mat"
+    #data_dir = "Reference_Data_2023/FTISxprt-20230808_083623.mat"
+    #data_dir = "data_other_2025/FTISxprt-20250304_125412.mat"
+    aircraft_data_int["data_dir"] = data_dir
+
     # Initial fuel mass in lbs
-    aircraft_data_int["int_fuel_lbs"] = 4100 # lbs
+    aircraft_data_int["int_fuel_lbs"] = 4100 # lbs, our 2025
+    #aircraft_data_int["int_fuel_lbs"] = 2800 # lbs, ref 2023
 
     # Passenger weights in kg
-    person_masses = np.array([91,96,79,71,90,93,90,98,83])
+    person_masses = np.array([91,96,79,71,90,93,90,98,83]) # our 2025
+    #person_masses = np.array([91,96,85,58,70,75,87,77,125]) # other 2025
+    #person_masses = np.array([101, 90, 67, 70, 79, 69, 75, 82, 82]) # ref 2023
     aircraft_data_int["person_masses"] = person_masses
 
     # Aerodynamic properties
-    e = 0.7251919893558775  # Oswald factor [ ]  # TODO sus (slightly)
+    e = 0.8113830949469385  # Oswald factor [ ]
     aircraft_data_int["e"] = e
-    CD0 = 0.02192211321079542  # Zero lift drag coefficient [ ]
+    CD0 = 0.02027336226684088  # Zero lift drag coefficient [ ]
     aircraft_data_int["CD0"] = CD0
-    CLa = np.rad2deg(0.07396140513957136)  # Slope of CL-alpha curve [ 1/rad ]
+    CLa = 4.455693334372708  # Slope of CL-alpha curve [ 1/rad ]
     aircraft_data_int["CLa"] = CLa
 
     # Longitudinal stability
-    Cma = -0.7617787652737056  # longitudinal stability [ ]
+    Cma = -0.7617783603698869  # longitudinal stability [ ]
     aircraft_data_int["Cma"] = Cma
-    Cmde = -1.586116039424313  # elevator effectiveness [ ] 
+    Cmde = -1.5861151999545298  # elevator effectiveness [ ] 
     aircraft_data_int["Cmde"] = Cmde
 
 

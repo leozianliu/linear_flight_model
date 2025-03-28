@@ -32,12 +32,25 @@ def T_to_Tc(T, h, sat, tas): # converts thrust to thrust coefficient;
     S_eng = inch_to_meters(27)**2 # 27in is the engine diameter
     return T/(q*S_eng)
 
+# def total_thrust(pressure_alt, mach, left_ff, right_ff, tat):
+#     dT = tat - pressure_alt_to_ISA_temperature(pressure_alt)
+
+#     map_to_thrust_fnc = np.vectorize(Thrust.compute)
+#     left_thrust = map_to_thrust_fnc(pressure_alt, mach, dT, left_ff)
+#     right_thrust = map_to_thrust_fnc(pressure_alt, mach, dT, right_ff)
+#     thrust = left_thrust + right_thrust
+#     return thrust
+
 def total_thrust(pressure_alt, mach, left_ff, right_ff, tat):
     dT = tat - pressure_alt_to_ISA_temperature(pressure_alt)
+    dT = np.mean(dT)
+    pressure_alt = np.mean(pressure_alt)
+    mach = np.mean(mach)
+    left_ff = np.mean(left_ff)
+    right_ff = np.mean(right_ff)
 
-    map_to_thrust_fnc = np.vectorize(Thrust.compute)
-    left_thrust = map_to_thrust_fnc(pressure_alt, mach, dT, left_ff)
-    right_thrust = map_to_thrust_fnc(pressure_alt, mach, dT, right_ff)
+    left_thrust = Thrust.compute(pressure_alt, mach, dT, left_ff)
+    right_thrust = Thrust.compute(pressure_alt, mach, dT, right_ff)
     thrust = left_thrust + right_thrust
     return thrust
 

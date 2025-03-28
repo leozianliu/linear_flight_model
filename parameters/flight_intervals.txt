@@ -1,0 +1,78 @@
+2025 Ours (Equilibrium for CLCD):
+[11253, 12343],
+[12630, 13378],
+[13766, 14549],
+[15499, 16633],
+[17126, 18072],
+[18438, 19143]
+
+2025 Ours (Equilibrium for CMA CMDE)
+[21069, 21352],
+[21825, 22220],
+[22787, 23088],
+[23528, 23863],
+[24739, 25071],
+[25765, 26237],
+[26732, 27064]
+
+
+2025 Ours (Motion):
+#Define the interval of the phugoid motion
+phugoid_interval = np.array([31812, 33288])
+
+#Define the interval of the short form motion
+shortpitch_interval = np.array([31168, 31239])
+
+#Define the interval of the spiral dive
+spiraldive_interval = np.array([37601, 39365])
+
+#Define the interval of the Dutch Roll (without yaw damper)
+dutchroll_interval = np.array([34233, 34492])
+
+#Define the interval of the aperiodic roll
+aperiodicroll_interval = np.array([35937, 36011])
+
+2025 Ours (Eigen fitting)
+# Short pitch motion
+[3117.0, 3120.0]
+# Phugoid motion
+[3195.0, 3320.0]
+# Dutch roll
+[3430.0, 3440.0]
+# Aperiodic roll
+[3594.0, 3601.1]
+# Spiral motion
+[3780.0, 3800.0]
+
+
+2023 Ref (Equilibrium for CLCD):
+[6822,7713],
+[7919,8638],
+[8875,9708],
+[10000,10621],
+[10988,11800],
+[13222,14317]
+
+2023 Ref (Equilibrium for CMA CMDE):
+[16048,16931],
+[17312,17973],
+[18264,18711],
+[20221,20637],
+[20973,21589],
+
+
+2025 Other group (Motion):
+#Define the interval of the phugoid motion
+phugoid_interval = np.array([28206, 29938])
+
+#Define the interval of the short form motion
+shortpitch_interval = np.array([30362, 30429])
+
+#Define the interval of the spiral dive
+spiraldive_interval = np.array([34560, 35379])
+
+#Define the interval of the Dutch Roll (without yaw damper)
+dutchroll_interval = np.array([32095, 32292])
+
+#Define the interval of the aperiodic roll
+aperiodicroll_interval = np.array([31132, 31228])

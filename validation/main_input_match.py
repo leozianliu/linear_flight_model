@@ -29,17 +29,16 @@ dutchroll_interval = np.array([34233, 34492])
 #Define the interval of the aperiodic roll
 aperiodicroll_interval = np.array([35937, 36011])
 
-data_dir = "data_ref_2025/FTISxprt-20250304_084412.mat"
-
 if __name__ == '__main__':
 
     ac_data = citation_data.Data()[0]
     cond_data = citation_data.Data()[1]
+    data_dir = citation_data.Data()[0]['data_dir']
 
     #steady_period_sec = [3410, 3420] # Used to get parameters for the aircraft in steady flight condition
-    compare_period_sec = [3175.2, 3310.8] # Used to compare the simulation with the real data
-    steady_period_sec = [int(compare_period_sec[0] - 2), int(compare_period_sec[0])] # Used to get parameters for the aircraft in steady flight condition
-    ac = Aircraft.Aircraft(steady_period_sec, ac_data, cond_data)
+    compare_period_sec = [3175.2, 3320.0] # Used to compare the simulation with the real data
+    steady_period_sec = [int(compare_period_sec[0] - 1), int(compare_period_sec[0])] # Used to get parameters for the aircraft in steady flight condition
+    ac = Aircraft.Aircraft(steady_period_sec, ac_data, cond_data, data_dir)
     solver = Solver.Solver(ac, cond_data)
     compare_valid = compare.compare_validation(ac, compare_period_sec, solver.sym_ss, solver.asym_ss)
 

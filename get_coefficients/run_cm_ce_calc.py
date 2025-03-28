@@ -16,14 +16,10 @@ import matplotlib.pyplot as plt
 import Aircraft
 
 time_of_interest = [1000,1001] # Time doesn't matter in this file because we are only getting c, S, and CmTc which are constant in citation.py
-ac = Aircraft.Aircraft(time_of_interest, citation_data.Data()[0], citation_data.Data()[1])
-
-# Parameters
-int_fuel_lbs = 4100
-data_dir = "data_ref_2025/FTISxprt-20250304_084412.mat"
+ac = Aircraft.Aircraft(time_of_interest, citation_data.Data()[0], citation_data.Data()[1], citation_data.Data()[0]['data_dir'])
 
 # Load the .mat file
-data = sp.io.loadmat(data_dir)
+data = sp.io.loadmat(citation_data.Data()[0]['data_dir'])
 
 # Accessing a struct field
 flightdata = data['flightdata']  # This gives a numpy structured array
@@ -67,26 +63,23 @@ rh_engine_FMF = np.asarray(flightdata['rh_engine_FMF'][0][0][0][0][0].flatten())
 rh_engine_FMF_si = lbs_hr_to_kg_s(rh_engine_FMF)
 
 # Total fuel left
-total_FL = int_fuel_lbs - (lh_engine_FU + rh_engine_FU)
+total_FL = ac.int_fuel_lbs - (lh_engine_FU + rh_engine_FU)
 total_FL_kg = lb_to_kg(total_FL)
 
 # Total weight
-person_masses = np.array([91,96,79,71,90,93,90,98,83])
-bem_kg = lb_to_kg(9197.0) # Basic empty mass
-total_mass = np.sum(person_masses) + total_FL_kg + bem_kg
-total_weight_N = total_mass * g
+total_weight_N = (total_FL_kg + ac.BEM_kg + np.sum(ac.person_masses)) * g
 
 # Time series
 time_series = np.asarray(flightdata['time'][0][0][0][0][0].flatten())
 
 # Thrust and thrust coefficient at standard condition (t=2140s)
-t_std = 2140
+t_std = 2257
 thrust_std = total_thrust(Dadc1_bcAlt_meters[t_std*10], Dadc1_mach[t_std*10], lh_engine_FMF_si[t_std*10], rh_engine_FMF_si[t_std*10], Dadc1_tat_si[t_std*10])
 Tcs = T_to_Tc(thrust_std, Dadc1_bcAlt_meters[t_std*10], Dadc1_sat_si[t_std*10], Dadc1_tas_si[t_std*10])
 
 # Change in elevator deflection when Benji walks to the cockpit
-t_benji_walk = np.array([2865, 3000]) # First measurement, second measurement in seconds
-benji_interval = t_benji_walk * 10
+#t_benji_walk = np.array([]) # First measurement, second measurement in seconds
+benji_interval = np.array([22576, 23770]) # Our data np.array([28650, 30000])
 real_density_benji = pressure_alt_to_density(Dadc1_bcAlt_meters[benji_interval[0]:benji_interval[1]], Dadc1_sat_si[benji_interval[0]:benji_interval[1]])
 avg_eas_benji = np.mean(tas_to_eas(Dadc1_tas_si[benji_interval[0]:benji_interval[1]], real_density_benji))
 
@@ -94,22 +87,24 @@ total_weight_N_benji = total_weight_N[benji_interval[0]:benji_interval[1]]
 avg_weight_N_benji = np.mean(total_weight_N_benji)
 ave_delta_e_benji_prev = np.mean(delta_e[benji_interval[0]-10:benji_interval[0]])
 ave_delta_e_benji_after = np.mean(delta_e[benji_interval[1]-10:benji_interval[1]])
-cg_benji_prev = 7.13025 # in meters
-cg_benji_after = 7.06214 # in meters
+# For reference data: ========
+cg_benji_prev = 7.12961869195437 # in meters
+cg_benji_after = 7.066830950085245 # in meters
+
+# For our data: =============
+# cg_benji_prev = 7.13025 # in meters
+# cg_benji_after = 7.06214 # in meters
 
 # cmde in 1/rad!!!
 cmde = cmde_calc(avg_weight_N_benji, ave_delta_e_benji_prev, ave_delta_e_benji_after, cg_benji_prev, cg_benji_after, avg_eas_benji, ac.c, ac.S)
 print('cmde (1/rad): ', cmde)
 
 # Equilibrium elevator deflection intervals in trim tests in idx or seconds*10
-equilibrium_elevator_intervals = np.array([[21069, 21352],
-                                            [21825, 22220],
-                                            [22787, 23088],
-                                            [23528, 23863],
-                                            [24739, 25071],
-                                            [25765, 26237],
-                                            [26732, 27064]
-                                            ])
+equilibrium_elevator_intervals = np.array([[16048,16931],
+[17312,17973],
+[18264,18711],
+[20221,20637],
+[20973,21589]])
 
 # Calculate average values of ras_arr and delta_e for each interval
 average_ras_arr = []

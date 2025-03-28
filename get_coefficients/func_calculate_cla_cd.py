@@ -17,7 +17,7 @@ class curve_calc:
     def __init__(self):
 
         # [10,11] is a filler to obtain static values from citation_data, this program does not use time dependent coefficients from aircraft.py
-        self.ac = Aircraft.Aircraft([1000,1001] , citation_data.Data()[0], citation_data.Data()[1])
+        self.ac = Aircraft.Aircraft([1000,1001] , citation_data.Data()[0], citation_data.Data()[1], citation_data.Data()[0]['data_dir'])
 
     def cl_data(self, data, data_ranges):
         """Generates an alpha-cl curve from the data.
@@ -65,7 +65,7 @@ class curve_calc:
 
             thrust = left_thrust + right_thrust
 
-            cl = 2 * (avg_weight - np.sin(avg_aoa) * thrust) / avg_rho / avg_tas**2 / self.ac.S
+            cl = 2 * (avg_weight - np.sin(np.deg2rad(avg_aoa)) * thrust) / avg_rho / avg_tas**2 / self.ac.S
             cl_curve.append([avg_aoa, cl])
 
         return cl_curve  # calculate

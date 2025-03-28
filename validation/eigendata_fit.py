@@ -44,21 +44,21 @@ class eigendata:
     def func_exp(self, t, a, b, c):
         return a * np.exp(b * t) + c
 
-    # def est_freq_fft(self, t, y):
-    #     Y = np.fft.fft(y)
-    #     frequencies = np.fft.fftfreq(len(t), d=(t[1] - t[0]))  # Compute frequency bins
-    #     positive_frequencies = frequencies[:len(frequencies)//2]
-    #     positive_Y = np.abs(Y[:len(Y)//2])
-    #     plt.plot(positive_frequencies, positive_Y)
-    #     plt.show()
-    #     return positive_frequencies[np.argmax(positive_Y)]
+    def est_freq_fft(self, t, y):
+        Y = np.fft.fft(y)
+        frequencies = np.fft.fftfreq(len(t), d=(t[1] - t[0]))  # Compute frequency bins
+        positive_frequencies = frequencies[:len(frequencies)//2]
+        positive_Y = np.abs(Y[:len(Y)//2])
+        plt.plot(positive_frequencies, positive_Y)
+        plt.show()
+        return positive_frequencies[np.argmax(positive_Y)]
 
     def guess_damped_oscil(self):
         a_guess = (max(self.data) - min(self.data))/2
         b_guess = -0.01
-        #c_guess =  2 * np.pi / (self.t[scipy.signal.find_peaks(self.data)[0][1]] - self.t[scipy.signal.find_peaks(self.data)[0][0]])
+        c_guess =  2 * np.pi / (self.t[scipy.signal.find_peaks(self.data)[0][1]] - self.t[scipy.signal.find_peaks(self.data)[0][0]])
         #c_guess = 2 * np.pi / self.est_freq_fft(self.t, self.data)
-        c_guess = np.pi * 2
+        #c_guess = 1
         d_guess = 0
         e_guess = (max(self.data) + min(self.data))/2
         self.guess = [a_guess, b_guess, c_guess, d_guess, e_guess]
